@@ -1,0 +1,45 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html, #root {
+  height: 100%;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+}
+
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+p {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.color-display {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 20px;
+  border: 2px solid #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.plus-icon {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+}
+
+input[type="color"] {
+  visibility: hidden;
+}
