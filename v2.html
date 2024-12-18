@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Personal Color Palette Classifier</title>
+<style>
+  body {
+    font-family: Arial, sans-serif; margin: 20px;
+  }
+  .result {
+    margin-top: 20px;
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+  <h1>Find Your Seasonal Palette Category</h1>
+  <p>Enter a color name or hex code, or select a color:</p>
+  <input type="text" id="colorInput" placeholder="e.g. #aabbcc or 'lavender'"/>
+  <input type="color" id="colorPicker" />
+  <button id="classifyButton">Classify Color</button>
+  
+  <div class="result" id="result"></div>
+
+  <script>
+    // Convert a CSS color to RGB
+    function getRGBFromColor(color) {
+      const tempElem = document.createElement('div');
+      tempElem.style.color = color;
+      document.body.appendChild(tempElem);
+      const computedColor = window.getComputedStyle(tempElem).color;
+      document.body.removeChild(tempElem);
+      const match = computedColor.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+      if (!match) return null;
+      return {
+        r: parseInt(match[1], 10),
+        g: parseInt(match[2], 10),
+        b: parseInt(match[3], 10)
+      };
+    }
+
+    // Convert RGB to HSL
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+
+      if(max === min) {
+        h = s = 0; // achromatic
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h = h * 60;
+      }
+
+      return { h, s: s*100, l: l*100 };
+    }
+
+    // Determine the seasonal palette category
+    function classifyColor(h, s, l) {
+      // Normalize H to [0,360)
+      h = (h + 360) % 360;
+
+      // Define threshold logic (example logic, adjust as needed):
+      // Warm vs Cool hue (simple approach):
+      const isWarm = (h < 90 || h > 330);
+
+      // Saturation levels:
+      // let's say:
+      // bright/clear: s > 50%
+      // muted/soft: s <= 50%
+      const isBright = s > 50;
+
+      // Lightness levels:
+      // light: l > 65%
+      // medium: 35% < l <= 65%
+      // deep: l <= 35%
+      let lightnessCategory;
+      if (l > 65) {
+        lightnessCategory = 'light';
+      } else if (l > 35) {
+        lightnessCategory = 'medium';
+      } else {
+        lightnessCategory = 'deep';
+      }
+
+      // Now combine these traits with typical seasonal palette definitions.
+      // This is just an example. You’d have to tweak these rules to match 
+      // your chosen system of classification.
+      
+      // Example sets:
+      // Spring palettes: Warm hues, often lighter and brighter.
+      // Summer palettes: Cool hues, often lighter and more muted.
+      // Autumn palettes: Warm hues, often deeper and more muted.
+      // Winter palettes: Cool hues, often clear and can be deep or bright.
+      
+      // Let’s say:
+      // "Spring Light" -> Warm, Light, Bright
+      if (isWarm && lightnessCategory === 'light' && isBright) {
+        return 'Spring Light';
+      }
+
+      // "Summer Cool Mute" -> Cool, Light/Medium, Muted
+      if (!isWarm && (lightnessCategory === 'light' || lightnessCategory === 'medium') && !isBright) {
+        return 'Summer Cool Mute';
+      }
+
+      // Add more conditions for other palettes as needed:
+      // e.g., "Autumn Deep Muted", "Winter Clear Bright", etc.
+
+      // If no exact match:
+      return 'Other Palette';
+    }
+
+    const colorInput = document.getElementById('colorInput');
+    const colorPicker = document.getElementById('colorPicker');
+    const classifyButton = document.getElementById('classifyButton');
+    const resultDiv = document.getElementById('result');
+
+    classifyButton.addEventListener('click', () => {
+      const userColor = colorInput.value.trim() || colorPicker.value;
+      const rgb = getRGBFromColor(userColor);
+      if (!rgb) {
+        alert('Invalid color. Please enter a valid color name or hex code.');
+        return;
+      }
+
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+      const paletteName = classifyColor(hsl.h, hsl.s, hsl.l);
+
+      resultDiv.textContent = `The color ${userColor} is classified as: ${paletteName}`;
+    });
+  </script>
+</body>
+</html>
